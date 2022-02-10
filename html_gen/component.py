@@ -1,9 +1,10 @@
 from html_gen.core import Text, Element
 from html_gen.tags import P
 from html_gen.render import flat_parse
-import html_gen.comparators
+from html_gen.comparators import parse_comparator, parse_variable
 
 from re import split
+from shlex import split as shlexsplit
 
 class Component:
 
@@ -23,13 +24,13 @@ class Component:
             
             for i in cached_item:
                 if i == "(:":
-                    if (argument := cached_item[(index := cached_item.index(i))+1].split())[0] == "if":
-                        if (comparator := argument[2]) == "==":
-                            compare = html_gen.comparators.eq
-                        elif (comparator := argument[2]) == "!=":
-                            compare = html_gen.comparators.noteq
+                    if (argument := shlexsplit(cached_item[(index := cached_item.index(i))+1]))[0] == "if":
+                        
+                        compare = parse_comparator(argument[2])
+                        firstvar = parse_variable(argument[1], elements)
+                        secvar = parse_variable(argument[3], elements)
                             
-                        if compare(elements[argument[1]], argument[3].replace("_", " ")):
+                        if compare(firstvar, secvar):
                             cached_item[index:index+3] = ""
                             cached_item[index+1:index+4] = ""
                         else:
