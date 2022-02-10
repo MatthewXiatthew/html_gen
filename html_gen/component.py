@@ -1,6 +1,7 @@
 from html_gen.core import Text, Element
 from html_gen.tags import P
 from html_gen.render import flat_parse
+import html_gen.comparators
 
 from re import split
 
@@ -23,7 +24,12 @@ class Component:
             for i in cached_item:
                 if i == "(:":
                     if (argument := cached_item[(index := cached_item.index(i))+1].split())[0] == "if":
-                        if elements[argument[1]] == argument[3].replace("_", " "):
+                        if (comparator := argument[2]) == "==":
+                            compare = html_gen.comparators.eq
+                        elif (comparator := argument[2]) == "!=":
+                            compare = html_gen.comparators.noteq
+                            
+                        if compare(elements[argument[1]], argument[3].replace("_", " ")):
                             cached_item[index:index+3] = ""
                             cached_item[index+1:index+4] = ""
                         else:
